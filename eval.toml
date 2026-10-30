@@ -1,0 +1,115 @@
+[eval]
+type = "other"
+evaluator = "deterministic"
+entrypoint = "python bench.py"
+
+[eval.schema.val_bpb]
+type = "float"
+primary = true
+better = "lower"
+display = "{:.4f}"
+description = "Mean val_bpb of the candidate's runs on 8×H100 (seeds 1337, 42, 2024): the last `<label>_exact` line, on the round-tripped artifact over the full FineWeb validation split; it counts only when meets_rules is 1 (lower is better)"
+
+[eval.schema.val_bpb_se]
+type = "float"
+display = "{:.4f}"
+description = "Standard error of val_bpb over the seeds"
+
+[eval.schema.val_loss]
+type = "float"
+display = "{:.4f}"
+description = "Mean val_loss (nats per token) of the scored line"
+
+[eval.schema.val_bpb_runs]
+type = "string"
+description = "Each seed's val_bpb"
+
+[eval.schema.prequant_val_bpb]
+type = "float"
+display = "{:.4f}"
+description = "Mean val_bpb of the last training-loop validation, before export (-1 if none)"
+
+[eval.schema.meets_rules]
+type = "int"
+description = "1 if every candidate run's artifact is at most 16,000,000 bytes and matches the logged size, training stopped within 600 s (train_time, and up to serialization), evaluation took at most 600 s, the score came after the round trip, and the whole validation split was scored once; else 0 (see rule_misses)"
+
+[eval.schema.rule_misses]
+type = "string"
+description = "The rules each run missed, or none"
+
+[eval.schema.artifact_bytes]
+type = "int"
+description = "Largest artifact over the candidate's runs: train_gpt.py bytes plus the final_model*.ptz file's bytes, measured on disk (limit 16,000,000)"
+
+[eval.schema.code_bytes]
+type = "int"
+description = "Bytes of train_gpt.py"
+
+[eval.schema.model_bytes]
+type = "int"
+description = "Largest compressed model file over the candidate's runs, bytes"
+
+[eval.schema.train_time_s]
+type = "float"
+display = "{:.1f}"
+description = "Longest train_time over the candidate's runs, as the run reports it (compile and warmup excluded), seconds (limit 600)"
+
+[eval.schema.pre_serialize_s]
+type = "float"
+display = "{:.1f}"
+description = "Longest train_time plus the wall time from the last training step to serialization, seconds: calibration on data must fit in the 600 s"
+
+[eval.schema.eval_time_s]
+type = "float"
+display = "{:.0f}"
+description = "Longest wall time from the last training line to the run's exit (export plus evaluation), seconds (limit 600)"
+
+[eval.schema.steps]
+type = "int"
+description = "Mean training steps of the candidate's runs"
+
+[eval.schema.runs]
+type = "int"
+description = "Candidate runs"
+
+[eval.schema.baseline_runs]
+type = "int"
+description = "Runs of the parent's code on the same machine (0 on the base node)"
+
+[eval.schema.baseline_val_bpb]
+type = "float"
+display = "{:.4f}"
+optional = true
+description = "val_bpb of the parent's code on the same machine (seed 1337)"
+
+[eval.schema.val_bpb_delta]
+type = "float"
+display = "{:+.4f}"
+optional = true
+description = "Candidate mean minus the parent's val_bpb on the same machine (lower is better)"
+
+[eval.schema.baseline_artifact_bytes]
+type = "int"
+optional = true
+description = "The parent's artifact on the same machine, bytes"
+
+[eval.schema.variant]
+type = "string"
+description = "Tokenizer and data variant the candidate ran on (sp1024 or sp4096)"
+
+[eval.schema.gpus]
+type = "int"
+description = "GPUs on the node"
+
+[eval.schema.gpu]
+type = "string"
+description = "GPU model"
+
+[eval.schema.driver]
+type = "string"
+description = "NVIDIA driver version"
+
+[eval.schema.wall_s]
+type = "float"
+display = "{:.0f}"
+description = "Eval wall time, seconds"

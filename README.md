@@ -34,7 +34,11 @@ Each scoring runs the candidate on three seeds, and its parent's code once on th
    - **train_time:** the run's own last `train_time:Nms`. As on the leaderboard, compiling, the warmup steps
      whose weights are restored, and periodic validation are excluded.
    - **pre_serialize_s:** train_time plus the wall time from the last training line (`step:`/`stopping_early`) to
-     the first `Serialized model` / `Total submission size` line. Calibration on data after the clock shows here.
+     the first `Serialized model` / `Total submission size` line, less any evaluation the run logs in between
+     (`eval_time:Nms`, e.g. a pre-quantization check). Calibration on data after the clock and before that line
+     shows here. Calibration after it (the baseline's first such line is the raw `final_model.pt`) doesn't: that is
+     left to pgolf-smoke's audit (a training shard opened after the clock with no time reserved for it) and to the
+     code review.
    - **eval_time:** the wall time from the last training line to the run's exit (export plus evaluation)
    - **the artifact:** the size of `train_gpt.py` plus the largest `final_model*.ptz` the run wrote, both
      measured on disk, then compared with the last `Total submission size …: N bytes` line
@@ -53,9 +57,11 @@ Each scoring runs the candidate on three seeds, and its parent's code once on th
 - eval_time ≤ 600 s
 - the score line comes after the size line, so the score is that of the round-tripped artifact
 - the scored set is the whole validation split
+- the run exited cleanly after printing its score
 
-A miss is reported with `meets_rules` = 0 and the reason in `rule_misses`, not raised. A crash, a timeout, or no
-score line raises, with the first traceback.
+A miss is reported with `meets_rules` = 0 and the reason in `rule_misses`, not raised. A run with no score line
+(a crash before it, or a timeout) raises, with the first traceback. Downloads are retried, truncated shards
+included.
 
 ## Rules not checked here
 
